@@ -22,3 +22,41 @@ class StudentsAPIDestroy(generics.RetrieveDestroyAPIView):
     queryset = Students.objects.all()
     serializer_class = StudentSerializer
     permission_classes = (IsAdminOrReadOnly, )
+
+class CourseAPIView(generics.ListCreateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+
+class CourseAPIUpdate(generics.RetrieveUpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+
+class CourseAPIDestroy(generics.RetrieveDestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+ 
+
+class CommentAPIView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+
+class CommentAPIUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly, )
+
+
+class RatingAPIView(generics.ListCreateAPIView):
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+    
+    def get_serializer_context(self):
+        return {'request': self.request}
+    
+    def perform_create(self, serializer):
+        serializer.save(student=self.request.user.student)
