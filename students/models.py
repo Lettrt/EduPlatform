@@ -91,3 +91,49 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Комментарий {self.comment} к курсу {self.course}'
+    
+class Rating(models.Model):
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, verbose_name='Курс')
+    student = models.ForeignKey('Students', on_delete=models.CASCADE, verbose_name='Студент')
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], verbose_name='Оценка')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
+    updated = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
+
+    class Meta:
+        unique_together = ['course', 'student']
+        ordering = ['created']
+        verbose_name = 'Оценка'
+        verbose_name_plural = 'Оценки'
+
+    def __str__(self):
+        return f'Оценка {self.rating} от {self.student} для курса {self.course}'
+    
+class Literature(models.Model):
+
+    course = models.ForeignKey('Course', related_name='Литература', on_delete=models.DO_NOTHING)
+    name = models.CharField(max_length=200, verbose_name='Название')
+    slug = models.SlugField(max_length=200)
+    image = models.ImageField(upload_to='books/images/', blank=True, verbose_name= 'Обложка')
+    book = models.FileField(blank=True, upload_to='books/',verbose_name= 'Книга')
+    description = models.TextField(blank=True, verbose_name='Описание')
+    author = models.CharField(max_length=40, verbose_name='Автор')
+    data = models.DateField(verbose_name='Дата публикации')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Литература'
+        verbose_name_plural = 'Литература'
+       
+    def download(self):
+        # Определите content_type динамически на основе расширения файла
+        filename = get_valid_filename(self.book.name)
+        content_type, _ = mimetypes.guess_type(filename)
+
+        # Отправьте файл как ответ с правильным content_type
+        response = FileResponse(self.book.open('rb'), content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    def __str__(self):
+        return f'{self.name} по курсу {self.course}'
