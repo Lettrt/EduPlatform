@@ -60,3 +60,31 @@ class RatingAPIView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         serializer.save(student=self.request.user.student)
+
+class LiteratureAPIView(generics.ListCreateAPIView):
+    queryset = Literature.objects.all()
+    serializer_class = LiteratureSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+    
+class DownloadBookView(APIView):
+
+    permission_classes = (IsAdminOrReadOnly, )
+
+    def get(self, request, pk):
+        book = get_object_or_404(Literature, pk=pk)
+        return book.download()
+
+class MainPostAPIView(generics.ListCreateAPIView):
+    queryset = MainPost.objects.all()
+    serializer_class = MainPostSerializer
+    permission_classes = (IsAdminOrReadOnly, )
+
+class SubPostAPIView(generics.ListCreateAPIView):
+    queryset = Subpost.objects.all()
+    serializer_class = SubpostSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+
+class SubPostAPIUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Subpost.objects.all()
+    serializer_class = SubpostSerializer
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly, )
