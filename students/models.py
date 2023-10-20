@@ -37,3 +37,57 @@ def create_student(sender, instance, created, **kwargs):
     if created:
         Students.objects.create(user=instance)
 
+class Course(models.Model):
+ 
+    class Status(models.TextChoices):
+        DRAFT = 'DF', 'Draft'
+        PUBLISHED = 'PB', 'Published'
+
+    title = models.CharField(max_length=100, db_index=True, verbose_name='Курсы')
+    slug = models.SlugField(max_length=250, unique_for_date='publish', null=True, blank=True)
+    logo = models.ImageField(upload_to='courses', verbose_name='Логотип', blank=True, null=True)
+    descriptions = models.TextField(max_length=3000, verbose_name='Описание', blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена', blank=True, null=True)
+    publish = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-publish']
+        indexes = [
+            models.Index(fields=['-publish']),
+        ]
+        verbose_name = 'Курс'
+        verbose_name_plural = 'Курсы'
+
+    @property
+    def average_rating(self):
+        rating  = Rating.objects.filter(course=self)
+        total_rating = sum(r.rating for r in rating)
+        num_rating = rating.count()
+        if num_rating > 0:
+            return round(total_rating / num_rating, 2)
+        else:
+            return f'Ещё нет рейтинга'
+
+    def __str__(self):
+        return f'{self.title}'
+
+
+class Comment(models.Model):
+
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, verbose_name='Курс')
+    student = models.ForeignKey('Students', on_delete=models.CASCADE, verbose_name='Студет')
+    comment = models.TextField(max_length=500, verbose_name='Комментарий')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
+    updated = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
+    active = models.BooleanField(default=True, verbose_name='Активен')
+
+    class Meta:
+        ordering = ['created']
+        indexes = [
+        models.Index(fields=['created']),
+        ]
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return f'Комментарий {self.comment} к курсу {self.course}'
