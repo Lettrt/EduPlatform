@@ -115,8 +115,6 @@ REST_FRAMEWORK = {
     ]
 }
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db.DbSession'
-
 LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "Asia/Bishkek"
 USE_I18N = True
